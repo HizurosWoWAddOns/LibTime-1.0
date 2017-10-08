@@ -1,14 +1,14 @@
 
 --[[
 Name: LibTime-1.0
-Revision: $Revision: 2 $
+Revision: $Revision: 3 $
 Author: Hizuro (hizuro@gmx.net)
 Description: A little library around date, time and GetGameTime and more...
 Dependencies: LibStub
 License: GPL v3
 ]]
 
-local MAJOR, MINOR = "LibTime-1.0", 2;
+local MAJOR, MINOR = "LibTime-1.0", 3;
 local lib = LibStub:NewLibrary(MAJOR, MINOR);
 
 if not lib then return; end
@@ -32,8 +32,8 @@ local countryNames = {
 	"Fiji","French Guiana","Galapagos","Georgia","Gilbert Island","Greenwich Mean","Gulf","Guyana","Hawaii","Hovd","Indian","Indochina","Iran","Irkutsk",
 	"Israel","Japan","Kaliningrad","Korea","Krasnoyarsk","Kyrgyzstan","Magadan","Malaysia","Maldives","Marshall Islands","Mauritius","Moscow","Mountain",
 	"Myanmar","Nauru","Nepal","New Caledonia","New Zealand","Newfoundland","Niue","Norfolk","Omsk","Pacific","Pakistan","Palau","Papua New Guinea","Paraguay",
-	"Peru","Philippine","Pierre &amp; Miquelon","Ponape","Reunion","Seychelles","Singapore","Solomon Islands","South Africa","Sri Lanka","Suriname","Tahiti",
-	"Tajikistan","Tokelau","Tonga","Turkmenistan","Tuvalu","Ulaanbaatar","Uruguay","Uzbekistan","Vanuatu","Venezuela","Vladivostok","Wallis &amp; Futuna",
+	"Peru","Philippine","Pierre & Miquelon","Ponape","Reunion","Seychelles","Singapore","Solomon Islands","South Africa","Sri Lanka","Suriname","Tahiti",
+	"Tajikistan","Tokelau","Tonga","Turkmenistan","Tuvalu","Ulaanbaatar","Uruguay","Uzbekistan","Vanuatu","Venezuela","Vladivostok","Wallis & Futuna",
 	"West Africa","West Samoa","Western European","Western Indonesian","Western Kazakhstan","Yakutsk","Yap","Yekaterinburg"
 };
 
@@ -84,10 +84,9 @@ local function realmTimeSyncTickerFunc()
 end
 
 function events.VARIABLES_LOADED()
-	for index, localizedName in pairs(lib.countryLocalizedNames)do
-		index=tonumber(index); -- curse localization tool return numeric keys as string.
-		if countryNames[index] then
-			countryNames[index] = localizedName;
+	for index,name in ipairs(countryNames) do
+		if lib.countryLocalizedNames[name] then
+			countryNames[index] = lib.countryLocalizedNames[name];
 		end
 	end
 	lib.countryLocalizedNames = nil; -- one table with names is enough ;)
