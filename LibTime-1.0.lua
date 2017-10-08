@@ -1,14 +1,14 @@
 
 --[[
 Name: LibTime-1.0
-Revision: $Revision: 3 $
+Revision: $Revision: 4 $
 Author: Hizuro (hizuro@gmx.net)
 Description: A little library around date, time and GetGameTime and more...
 Dependencies: LibStub
 License: GPL v3
 ]]
 
-local MAJOR, MINOR = "LibTime-1.0", 3;
+local MAJOR, MINOR = "LibTime-1.0", 4;
 local lib = LibStub:NewLibrary(MAJOR, MINOR);
 
 if not lib then return; end
@@ -59,6 +59,9 @@ local function filterTimePlayed(self,...)
 	end
 	if playedHide then -- only filter own message
 		playedHide=false;
+		if not suppressAllPlayedMsgs then
+			ChatFrame_DisplayTimePlayed = orig_ChatFrame_DisplayTimePlayed;
+		end
 		return;
 	end
 	return orig_ChatFrame_DisplayTimePlayed(self,...);
@@ -113,14 +116,10 @@ end
 
 function events.TIME_PLAYED_MSG(...)
 	playedTimeout, playedTotal, playedLevel = false, ...;
-	if not suppressAllPlayedMsgs then
-		ChatFrame_DisplayTimePlayed = orig_ChatFrame_DisplayTimePlayed;
-	end
 end
 
 UIParent:HookScript("OnEvent",function(self,event,...)
 	if events[event] then
-		print(event,"---");
 		events[event](...);
 		events[event]=nil;
 	end
