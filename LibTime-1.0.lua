@@ -34,12 +34,12 @@ local countryNames = {
 	"Myanmar","Nauru","Nepal","New Caledonia","New Zealand","Newfoundland","Niue","Norfolk","Omsk","Pacific","Pakistan","Palau","Papua New Guinea","Paraguay",
 	"Peru","Philippine","Pierre & Miquelon","Ponape","Reunion","Seychelles","Singapore","Solomon Islands","South Africa","Sri Lanka","Suriname","Tahiti",
 	"Tajikistan","Tokelau","Tonga","Turkmenistan","Tuvalu","Ulaanbaatar","Uruguay","Uzbekistan","Vanuatu","Venezuela","Vladivostok","Wallis & Futuna",
-	"West Africa","West Samoa","Western European","Western Indonesian","Western Kazakhstan","Yakutsk","Yap","Yekaterinburg"
+	"West Africa","West Samoa","Western European","Western Indonesian","Western Kazakhstan","Yakutsk","Yap","Yekaterinburg","Germany"
 };
 
 local countryTimeShift = { -- index matching with countryNames
 	4.5,-9,3,-3,4,9.5,10,8,4,-1,6,6,-4,-3,8,-1,2,-4,1,-3,8,-6,10,-4,8,7,10,6.5,-5,-10,3,-1,9,2,9,6,-5,-5,-4,-2,12,-3,-6,4,12,0,4,-4,-10,7,5.5,7,3.5,9,2,9,3,9,8,
-	5,12,8,5,12,4,4,-7,6.5,12,5.75,11,12,-3.5,-11,11.5,7,-8,5,9,10,-4,-5,8,-3,11,4,4,8,11,2,5.5,-3,-10,5,13,13,5,12,8,-3,5,11,-4.5,11,12,1,13,0,7,5,10,10,6
+	5,12,8,5,12,4,4,-7,6.5,12,5.75,11,12,-3.5,-11,11.5,7,-8,5,9,10,-4,-5,8,-3,11,4,4,8,11,2,5.5,-3,-10,5,13,13,5,12,8,-3,5,11,-4.5,11,12,1,13,0,7,5,10,10,6,1
 };
 
 local countryDST = { -- index matching with countryNames
@@ -47,7 +47,7 @@ local countryDST = { -- index matching with countryNames
 	false,false,false,false,false,true, false,true, false,false,true, false,false,false,true, false,false,false,false,true, false,false,true, false,false,false,
 	true, false,true, false,false,false,false,false,false,false,false,false,false,false,true, false,false,false,false,true, true, false,false,false,true, false,
 	false,false,true, false,false,true, false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true, false,false,false,false,
-	false,true, true, true, false,false,false,false,false
+	false,true, true, true, false,false,false,false,false,true
 }
 
 
