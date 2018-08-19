@@ -111,7 +111,9 @@ function events.PLAYER_LOGIN()
 		-- only replace if original from blizzard
 		ChatFrame_DisplayTimePlayed = filterTimePlayed;
 	end
-	C_Timer.After(playedTimeout,playedTimeoutFunc);
+	if playedTimeout then
+		C_Timer.After(playedTimeout,playedTimeoutFunc);
+	end
 end
 
 function events.TIME_PLAYED_MSG(...)
