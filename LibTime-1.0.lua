@@ -24,31 +24,23 @@ local events = {};
 
 lib.countryLocalizedNames = {}; -- filled by localizations_(.*).lua *** this table is temporary and will be nil after VARIABLES_LOADED ***
 
-local countryNames = {
-	"Afghanistan","Alaska","Arabian","Argentina","Armenia","Australian Central","Australian Eastern","Australian Western","Azerbaijan","Azores","Bangladesh",
-	"Bhutan","Bolivia","Brazil","Brunei","Cape Verde","Central Africa","Central Brazilian","Central European","Central Greenland","Central Indonesian",
-	"US Central Standart Time (CST)","Chamorro","Chile","China","Christmas Island","Chuuk","Cocos Islands","Colombia","Cook Islands","East Africa",
-	"East Greenland","East Timor","Eastern European","Eastern Indonesian","Eastern Kazakhstan","Eastern","Ecuador","Falkland Island","Fernando de Noronha",
-	"Fiji","French Guiana","Galapagos","Georgia","Gilbert Island","Greenwich Mean","Gulf","Guyana","Hawaii","Hovd","Indian","Indochina","Iran","Irkutsk",
-	"Israel","Japan","Kaliningrad","Korea","Krasnoyarsk","Kyrgyzstan","Magadan","Malaysia","Maldives","Marshall Islands","Mauritius","Moscow","Mountain",
-	"Myanmar","Nauru","Nepal","New Caledonia","New Zealand","Newfoundland","Niue","Norfolk","Omsk","Pacific","Pakistan","Palau","Papua New Guinea","Paraguay",
-	"Peru","Philippine","Pierre & Miquelon","Ponape","Reunion","Seychelles","Singapore","Solomon Islands","South Africa","Sri Lanka","Suriname","Tahiti",
-	"Tajikistan","Tokelau","Tonga","Turkmenistan","Tuvalu","Ulaanbaatar","Uruguay","Uzbekistan","Vanuatu","Venezuela","Vladivostok","Wallis & Futuna",
-	"West Africa","West Samoa","Western European","Western Indonesian","Western Kazakhstan","Yakutsk","Yap","Yekaterinburg","Germany"
+local countryNames = {};
+local countries = {
+	"Afghanistan;4.5;0","Alaska;-9;1","Arabian;3;0","Argentina;-3;0","Armenia;4;1","Australian Central;9.5;1","Australian Eastern;10;1",
+	"AustralianWestern;8;0","Azerbaijan;4;1","Azores;-1;1","Bangladesh;6;0","Bhutan;6;0","Bolivia;-4;0","Brazil;-3;0","Brunei;8;0","Cape Verde;-1;0",
+	"Central Africa;2;0","Central Brazilian;-4;1","Central European;1;1","Central Greenland;-3;1","Central Indonesian;8;0","Chamorro;10;0","Chile;-4;1",
+	"China;8;0","Christmas Island;7;0","Chuuk;10;0","Cocos Islands;6.5;0","Colombia;-5;0","Cook Islands;-10;0","East Africa;3;0","Eastern;-5;1",
+	"Eastern European;2;1","Eastern Indonesian;9;0","Eastern Kazakhstan;6;0","East Greenland;-1;1","East Timor;9;0","Ecuador;-5;0","Falkland Island;-4;0",
+	"Fernando de Noronha;-2;0","Fiji;12;1","French Guiana;-3;0","Galapagos;-6;0","Georgia;4;0","Germany;1;1","Gilbert Island;12;0","Greenwich Mean;0;1",
+	"Gulf;4;0","Guyana;-4;0","Hawaii;-10;1","Hovd;7;0","Indian;5.5;0","Indochina;7;0","Iran;3.5;1","Irkutsk;9;0","Israel;2;1","Japan;9;0",
+	"Kaliningrad;3;0","Korea;9;0","Krasnoyarsk;8;0","Kyrgyzstan;5;0","Magadan;12;0","Malaysia;8;0","Maldives;5;0","Marshall Islands;12;0","Mauritius;4;0",
+	"Moscow;4;0","Mountain;-7;1","Myanmar;6.5;0","Nauru;12;0","Nepal;5.75;0","New Caledonia;11;0","Newfoundland;-3.5;1","New Zealand;12;1","Niue;-11;0",
+	"Norfolk;11.5;0","Omsk;7;0","Pacific;-8;1","Pakistan;5;0","Palau;9;0","Papua New Guinea;10;0","Paraguay;-4;1","Peru;-5;0","Philippine;8;0",
+	"Pierre & Miquelon;-3;1","Ponape;11;0","Reunion;4;0","Seychelles;4;0","Singapore;8;0","Solomon Islands;11;0","South Africa;2;0","Sri Lanka;5.5;0",
+	"Suriname;-3;0","Tahiti;-10;0","Tajikistan;5;0","Tokelau;13;0","Tonga;13;0","Turkmenistan;5;0","Tuvalu;12;0","Ulaanbaatar;8;0","Uruguay;-3;1",
+	"US Central Standart Time (CST);-6;1","Uzbekistan;5;0","Vanuatu;11;0","Venezuela;-4.5;0","Vladivostok;11;0","Wallis & Futuna;12;0","West Africa;1;1",
+	"Western European;0;1","Western Indonesian;7;0","Western Kazakhstan;5;0","West Samoa;13;1","Yakutsk;10;0","Yap;10;0","Yekaterinburg;6;0"
 };
-
-local countryTimeShift = { -- index matching with countryNames
-	4.5,-9,3,-3,4,9.5,10,8,4,-1,6,6,-4,-3,8,-1,2,-4,1,-3,8,-6,10,-4,8,7,10,6.5,-5,-10,3,-1,9,2,9,6,-5,-5,-4,-2,12,-3,-6,4,12,0,4,-4,-10,7,5.5,7,3.5,9,2,9,3,9,8,
-	5,12,8,5,12,4,4,-7,6.5,12,5.75,11,12,-3.5,-11,11.5,7,-8,5,9,10,-4,-5,8,-3,11,4,4,8,11,2,5.5,-3,-10,5,13,13,5,12,8,-3,5,11,-4.5,11,12,1,13,0,7,5,10,10,6,1
-};
-
-local countryDST = { -- index matching with countryNames
-	false,true, false,false,true, true, true, false,true, true, false,false,false,false,false,false,false,true, true, true, false,true, false,true, false,false,
-	false,false,false,false,false,true, false,true, false,false,true, false,false,false,true, false,false,false,false,true, false,false,true, false,false,false,
-	true, false,true, false,false,false,false,false,false,false,false,false,false,false,true, false,false,false,false,true, true, false,false,false,true, false,
-	false,false,true, false,false,true, false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true, false,false,false,false,
-	false,true, true, true, false,false,false,false,false,true
-}
 
 
 --[[ internal event and update functions ]]--
@@ -87,10 +79,10 @@ local function realmTimeSyncTickerFunc()
 end
 
 function events.VARIABLES_LOADED()
-	for index,name in ipairs(countryNames) do
-		if lib.countryLocalizedNames[name] then
-			countryNames[index] = lib.countryLocalizedNames[name];
-		end
+	for index,data in ipairs(countries) do
+		local name,shift,dst = strsplit(";",data);
+		countries[index] = {name=lib.countryLocalizedNames[name] or name,timeshift=tonumber(shift),dst=dst==1};
+		countryNames[index] = lib.countryLocalizedNames[name] or name;
 	end
 	lib.countryLocalizedNames = nil; -- one table with names is enough ;)
 	UIParent:RegisterEvent("TIME_PLAYED_MSG");
@@ -173,21 +165,21 @@ end
 -- @param inSeconds [bool]
 -- @return hour, minute, second, country name
 function lib.GetCountryTime(countryId,inSeconds)
-	assert(countryId and countryDST[countryId] and countryTimeShift[countryId], "usage: <LibTime-1.0>.GetCountryTime(<iCountryId>[,<bInSeconds>])");
-	local dst,timeshift = countryDST[countryId],countryTimeShift[countryId];
+	assert(countryId and countries[countryId], "usage: <LibTime-1.0>.GetCountryTime(<iCountryId>[,<bInSeconds>])");
+	local country = countries[countryId];
 	local t = lib.GetUTCTime(true);
 	local l = date("*t");
-	if (l.isdst==true and dst==0) then
+	if (l.isdst==true and country.dst==0) then
 		t = t - 3600;
-	elseif (l.isdst==false and dst==1) then
+	elseif (l.isdst==false and country.dst==1) then
 		t = t + 3600;
 	end
-	t = t+(3600*timeshift);
+	t = t+(3600*country.timeshift);
 	if inSeconds==true then
-		return t, countryNames[countryId];
+		return t, country.name;
 	end
 	local H,M,S = date("%H:%M:%S",t);
-	return tonumber(H), tonumber(M), tonumber(S), countryNames[countryId];
+	return tonumber(H), tonumber(M), tonumber(S), country.name;
 end
 
 
