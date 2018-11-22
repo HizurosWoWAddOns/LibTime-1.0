@@ -13,13 +13,12 @@ local lib = LibStub:NewLibrary(MAJOR, MINOR);
 
 if not lib then return; end
 
-local GetGameTime, date, time = GetGameTime, date, time;
+local GetGameTime, date, time, _G = GetGameTime, date, time, _G;
 local hms,hm = "%02d:%02d:%02d","%02d:%02d";
 local realmTime,minute = false,nil;
 local playedTimeout, playedHide = 12, false;
 local playedTotal, playedLevel, playedSession = 0, 0, false;
 local suppressAllPlayedMsgs = false;
-local orig_ChatFrame_DisplayTimePlayed = ChatFrame_DisplayTimePlayed;
 local events = {};
 
 lib.countryLocalizedNames = {}; -- filled by localizations_(.*).lua *** this table is temporary and will be nil after VARIABLES_LOADED ***
@@ -45,18 +44,28 @@ local countries = {
 
 --[[ internal event and update functions ]]--
 
-local function filterTimePlayed(self,...)
-	if suppressAllPlayedMsgs and playedSession and time()-playedSession<=suppressAllPlayedMsgs then
-		return;
-	end
-	if playedHide then -- only filter own message
-		playedHide=false;
-		if not suppressAllPlayedMsgs then
-			ChatFrame_DisplayTimePlayed = orig_ChatFrame_DisplayTimePlayed;
+local chatFrames = false;
+local function toggleChatFramesTimePlayedMsgEvent()
+	if not chatFrames then
+		chatFrames = {};
+		for i=1, 10 do
+			local frame = _G["ChatFrame"..i];
+			if _G["ChatFrame"..i] and _G["ChatFrame"..i].messageTypeList then
+				for _, group in ipairs(_G["ChatFrame"..i].messageTypeList) do
+					if group=="SYSTEM" then
+						_G["ChatFrame"..i]:UnregisterEvent("TIME_PLAYED_MSG");
+						tinsert(chatFrames,i);
+					end
+				end
+			end
 		end
-		return;
+	else
+		for i=1, #chatFrames do
+			if _G["ChatFrame"..chatFrames[i]] then
+				_G["ChatFrame"..chatFrames[i]]:RegisterEvent("TIME_PLAYED_MSG");
+			end
+		end
 	end
-	return orig_ChatFrame_DisplayTimePlayed(self,...);
 end
 
 local function playedTimeoutFunc()
@@ -99,10 +108,7 @@ function events.PLAYER_LOGIN()
 		minute = minutes;
 		realmTimeSyncTicker = C_Timer.NewTicker(0.5,realmTimeSyncTickerFunc);
 	end
-	if (issecurevariable("ChatFrame_DisplayTimePlayed")) then
-		-- only replace if original from blizzard
-		ChatFrame_DisplayTimePlayed = filterTimePlayed;
-	end
+	toggleChatFramesTimePlayedMsgEvent();
 	if playedTimeout then
 		C_Timer.After(playedTimeout,playedTimeoutFunc);
 	end
@@ -110,6 +116,9 @@ end
 
 function events.TIME_PLAYED_MSG(...)
 	playedTimeout, playedTotal, playedLevel = false, ...;
+	if not suppressAllPlayedMsgs and chatFrames then
+		toggleChatFramesTimePlayedMsgEvent();
+	end
 end
 
 UIParent:HookScript("OnEvent",function(self,event,...)
@@ -235,7 +244,9 @@ function lib.SuppressAllPlayedForSeconds(seconds)
 		local since = time()-(playedSession or 0);
 		if since<seconds then
 			C_Timer.After(seconds-since+15,function()
-				ChatFrame_DisplayTimePlayed = orig_ChatFrame_DisplayTimePlayed;
+				if chatFrame then
+					toggleChatFramesTimePlayedMsgEvent();
+				end
 			end);
 		end
 	end
