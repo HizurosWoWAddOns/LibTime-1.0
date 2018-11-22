@@ -1,14 +1,14 @@
 
 --[[
 Name: LibTime-1.0
-Revision: $Revision: 4 $
+Revision: $Revision: 5 $
 Author: Hizuro (hizuro@gmx.net)
 Description: A little library around date, time and GetGameTime and more...
 Dependencies: LibStub
 License: GPL v3
 ]]
 
-local MAJOR, MINOR = "LibTime-1.0", 4;
+local MAJOR, MINOR = "LibTime-1.0", 5;
 local lib = LibStub:NewLibrary(MAJOR, MINOR);
 
 if not lib then return; end
@@ -220,9 +220,9 @@ function lib.GetTimeString(name,b24hours,displaySeconds,countryId)
 	local h,m,s,synced = lib["Get"..name](countryId);
 	local suffix = "";
 	if (b24hours~=true) then
-		h,suffix = tonumber(h), " AM";
+		h,suffix = tonumber(h), " "..TIMEMANAGER_AM;
 		if h >= 12 then
-			h,suffix = h-12," PM";
+			h,suffix = h-12," "..TIMEMANAGER_PM;
 		end
 	end
 	if (displaySeconds==true) then
