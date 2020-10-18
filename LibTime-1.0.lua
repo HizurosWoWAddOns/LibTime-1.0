@@ -21,7 +21,7 @@ local playedTotal, playedLevel, playedSession = 0, 0, false;
 local suppressAllPlayedMsgs = false;
 local events = {};
 
-lib.countryLocalizedNames = {}; -- filled by localizations_(.*).lua *** this table is temporary and will be nil after VARIABLES_LOADED ***
+lib.countryLocalizedNames = {}; -- filled on end of the file
 
 local countryNames = {};
 local countries = {
@@ -139,7 +139,7 @@ function lib.GetGameTime(inSeconds)
 		if inSeconds==true then
 			return t,(minute==nil);
 		end
-		local t = {strsplit(":",date("%H:%M:%S",t))};
+		local t = {strsplit(HEADER_COLON,date("%H:%M:%S",t))};
 		return tonumber(t[1]),tonumber(t[2]),tonumber(t[3]),(minute==nil);
 	end
 	if inSeconds==true then
@@ -152,7 +152,7 @@ end
 --- GetLocalTime
 -- @return hours, minutes, seconds
 function lib.GetLocalTime()
-	local t = {strsplit(":",date("%H:%M:%S"))};
+	local t = {strsplit(HEADER_COLON,date("%H:%M:%S"))};
 	return tonumber(t[1]),tonumber(t[2]),tonumber(t[3]);
 end
 
@@ -164,7 +164,7 @@ function lib.GetUTCTime(inSeconds)
 	if inSeconds==true then
 		return time(date("!*t"));
 	end
-	local t = {strsplit(":",date("!%H:%M:%S"))};
+	local t = {strsplit(HEADER_COLON,date("!%H:%M:%S"))};
 	return tonumber(t[1]),tonumber(t[2]),tonumber(t[3]);
 end
 
@@ -249,5 +249,33 @@ function lib.SuppressAllPlayedForSeconds(seconds)
 				end
 			end);
 		end
+	end
+end
+
+
+-- localizations; filled by packager
+
+do
+	local L = lib.countryLocalizedNames;
+	if LOCALE_deDE then
+--@localization(locale="deDE", format="lua_additive_table", handle-subnamespaces="none", handle-unlocalized="ignore")@
+	elseif LOCALE_esES then
+--@localization(locale="esES", format="lua_additive_table", handle-subnamespaces="none", handle-unlocalized="ignore")@
+	elseif LOCALE_esMX then
+--@localization(locale="esMX", format="lua_additive_table", handle-subnamespaces="none", handle-unlocalized="ignore")@
+	elseif LOCALE_frFR then
+--@localization(locale="frFR", format="lua_additive_table", handle-subnamespaces="none", handle-unlocalized="ignore")@
+	elseif LOCALE_itIT then
+--@localization(locale="itIT", format="lua_additive_table", handle-subnamespaces="none", handle-unlocalized="ignore")@
+	elseif LOCALE_koKR then
+--@localization(locale="koKR", format="lua_additive_table", handle-subnamespaces="none", handle-unlocalized="ignore")@
+	elseif (LOCALE_ptBR or LOCALE_ptPT) then
+--@localization(locale="ptBR", format="lua_additive_table", handle-subnamespaces="none", handle-unlocalized="ignore")@
+	elseif LOCALE_ruRU then
+--@localization(locale="ruRU", format="lua_additive_table", handle-subnamespaces="none", handle-unlocalized="ignore")@
+	elseif LOCALE_zhCN then
+--@localization(locale="zhCN", format="lua_additive_table", handle-subnamespaces="none", handle-unlocalized="ignore")@
+	elseif LOCALE_zhTW then
+--@localization(locale="zhTW", format="lua_additive_table", handle-subnamespaces="none", handle-unlocalized="ignore")@
 	end
 end
