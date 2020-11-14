@@ -1,14 +1,14 @@
 
 --[[
 Name: LibTime-1.0
-Revision: $Revision: 5 $
+Revision: $Revision: @project-version@ $
 Author: Hizuro (hizuro@gmx.net)
 Description: A little library around date, time and GetGameTime and more...
 Dependencies: LibStub
 License: GPL v3
 ]]
 
-local MAJOR, MINOR = "LibTime-1.0", 5;
+local MAJOR, MINOR = "LibTime-1.0", tonumber((gsub("@project-version@","r",""))) or 999;
 local lib = LibStub:NewLibrary(MAJOR, MINOR);
 
 if not lib then return; end
@@ -139,7 +139,7 @@ function lib.GetGameTime(inSeconds)
 		if inSeconds==true then
 			return t,(minute==nil);
 		end
-		local t = {strsplit(HEADER_COLON,date("%H:%M:%S",t))};
+		local t = {strsplit(":",date("%H:%M:%S",t))};
 		return tonumber(t[1]),tonumber(t[2]),tonumber(t[3]),(minute==nil);
 	end
 	if inSeconds==true then
@@ -152,7 +152,7 @@ end
 --- GetLocalTime
 -- @return hours, minutes, seconds
 function lib.GetLocalTime()
-	local t = {strsplit(HEADER_COLON,date("%H:%M:%S"))};
+	local t = {strsplit(":",date("%H:%M:%S"))};
 	return tonumber(t[1]),tonumber(t[2]),tonumber(t[3]);
 end
 
@@ -164,7 +164,7 @@ function lib.GetUTCTime(inSeconds)
 	if inSeconds==true then
 		return time(date("!*t"));
 	end
-	local t = {strsplit(HEADER_COLON,date("!%H:%M:%S"))};
+	local t = {strsplit(":",date("!%H:%M:%S"))};
 	return tonumber(t[1]),tonumber(t[2]),tonumber(t[3]);
 end
 
