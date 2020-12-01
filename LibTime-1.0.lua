@@ -221,7 +221,7 @@ function lib.GetTimeString(name,b24hours,displaySeconds,countryId)
 	local suffix = "";
 	if (b24hours~=true) then
 		h,suffix = tonumber(h), " "..TIMEMANAGER_AM;
-		if h >= 12 then
+		if h > 12 then
 			h,suffix = h-12," "..TIMEMANAGER_PM;
 		end
 	end
