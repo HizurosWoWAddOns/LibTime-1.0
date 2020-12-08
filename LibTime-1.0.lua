@@ -19,6 +19,7 @@ local realmTime,minute = false,nil;
 local playedTimeout, playedHide = 12, false;
 local playedTotal, playedLevel, playedSession = 0, 0, false;
 local suppressAllPlayedMsgs = false;
+local realmTimeSyncTicker
 local events = {};
 
 lib.countryLocalizedNames = {}; -- filled on end of the file
