@@ -245,7 +245,7 @@ function lib.SuppressAllPlayedForSeconds(seconds)
 		local since = time()-(playedSession or 0);
 		if since<seconds then
 			C_Timer.After(seconds-since+15,function()
-				if chatFrame then
+				if chatFrames then
 					toggleChatFramesTimePlayedMsgEvent();
 				end
 			end);
