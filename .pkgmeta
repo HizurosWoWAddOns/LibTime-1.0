@@ -17,3 +17,6 @@ ignore:
   - libs/CallbackHandler-1.0/CallbackHandler-1.0.xml
 
 license-output: LICENSE.txt
+
+tools-used:
+  - luacheck
