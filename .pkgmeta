@@ -18,5 +18,3 @@ ignore:
 
 license-output: LICENSE.txt
 
-tools-used:
-  - luacheck
