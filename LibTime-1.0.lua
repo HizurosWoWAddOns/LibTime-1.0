@@ -131,50 +131,58 @@ end);
 
 
 --[[ library functions ]]--
+local function get_date(timeval,b24h,bUTC)
+	local datestr = (bUTC and "!" or "") .. (b24h and "%H:%M:%S" or "%I:%M:%S:%p");
+	local t = {strsplit(":",date(datestr,timeval))};
+	return tonumber(t[1]),tonumber(t[2]),tonumber(t[3]), t[4];
+end
 
 --- GetGameTime
+-- @param b24hours [bool]
+-- @param inSeconds [bool]
 -- @return hours, minutes, seconds, boolSecondsSynced
-function lib.GetGameTime(inSeconds)
+function lib.GetGameTime(b24hours,inSeconds)
 	if realmTime then
 		local t = time()-realmTime;
 		if inSeconds==true then
 			return t,(minute==nil);
 		end
-		local t = {strsplit(":",date("%H:%M:%S",t))};
-		return tonumber(t[1]),tonumber(t[2]),tonumber(t[3]),(minute==nil);
+		local H,M,S,P = get_date(t,b24hours);
+		return H,M,S,P,(minute==nil)
 	end
 	if inSeconds==true then
 		return time();
 	end
-	return lib.GetLocalTime();
+	return lib.GetLocalTime(b24hours);
 end
 
 
 --- GetLocalTime
+-- @param b24hours [bool]
 -- @return hours, minutes, seconds
-function lib.GetLocalTime()
-	local t = {strsplit(":",date("%H:%M:%S"))};
-	return tonumber(t[1]),tonumber(t[2]),tonumber(t[3]);
+function lib.GetLocalTime(b24hours)
+	return get_date(nil,b24hours);
 end
 
 
 --- GetUTCTime
+-- @param b24hours [bool]
 -- @param inSeconds [bool]
 -- @return hours, minutes, seconds
-function lib.GetUTCTime(inSeconds)
+function lib.GetUTCTime(b24hours,inSeconds)
 	if inSeconds==true then
 		return time(date("!*t"));
 	end
-	local t = {strsplit(":",date("!%H:%M:%S"))};
-	return tonumber(t[1]),tonumber(t[2]),tonumber(t[3]);
+	return get_date(nil,b24hours,true);
 end
 
 
 --- GetCountryTime
 -- @param country [string|number]
+-- @param b24hours [bool]
 -- @param inSeconds [bool]
 -- @return hour, minute, second, country name
-function lib.GetCountryTime(countryId,inSeconds)
+function lib.GetCountryTime(countryId,b24hours,inSeconds)
 	assert(countryId and countries[countryId], "usage: <LibTime-1.0>.GetCountryTime(<iCountryId>[,<bInSeconds>])");
 	local country = countries[countryId];
 	local t = lib.GetUTCTime(true);
@@ -188,8 +196,8 @@ function lib.GetCountryTime(countryId,inSeconds)
 	if inSeconds==true then
 		return t, country.name;
 	end
-	local H,M,S = date("%H:%M:%S",t);
-	return tonumber(H), tonumber(M), tonumber(S), country.name;
+	local H,M,S,P = get_date(t,b24hours);
+	return H,M,S,P,country.name;
 end
 
 
@@ -218,14 +226,15 @@ end
 -- @param countryId      [number]  - only for use with GetCountryTime
 function lib.GetTimeString(name,b24hours,displaySeconds,countryId)
 	assert(lib["Get"..name],"Usage: <LibTime-1.0>.GetTimeString(<GameTime|LocalTime|UTCTime|CountryTime>[,<b24hours>[,<bDisplaySeconds>[,<iCountryId>]]])");
-	local h,m,s,synced = lib["Get"..name](countryId);
-	local suffix = "";
-	if (b24hours~=true) then
-		h,suffix = tonumber(h), " "..TIMEMANAGER_AM;
-		if h > 12 then
-			h,suffix = h-12," "..TIMEMANAGER_PM;
-		end
+	if b24hours==nil then
+		b24hours = true;
 	end
+	local params = {b24hours};
+	if countryId then
+		tinsert(params,1,countryId);
+	end
+	local h,m,s,p,synced = lib["Get"..name](unpack(params));
+	local suffix = p and " "..p or "";
 	if (displaySeconds==true) then
 		if name=="GameTime" and not synced then
 			suffix = ":−−"..suffix;
