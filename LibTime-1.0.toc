@@ -1,6 +1,6 @@
-## Interface: 90200
-## Interface-BCC: 20503
-## Interface-Classic: 11402
+## Interface: 90205
+## Interface-BCC: 20504
+## Interface-Classic: 11403
 ## Title: Lib: LibTime-1.0
 ## Notes: A little library around date, time and GetGameTime and more...
 ## Author: Hizuro
