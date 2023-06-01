@@ -89,16 +89,16 @@ local function realmTimeSyncTickerFunc()
 end
 
 function events.VARIABLES_LOADED()
+	UIParent:RegisterEvent("TIME_PLAYED_MSG");
+end
+
+function events.PLAYER_LOGIN()
 	for index,data in ipairs(countries) do
 		local name,shift,dst = strsplit(";",data);
 		countries[index] = {name=lib.countryLocalizedNames[name] or name,timeshift=tonumber(shift),dst=dst==1};
 		countryNames[index] = lib.countryLocalizedNames[name] or name;
 	end
-	lib.countryLocalizedNames = nil; -- one table with names is enough ;)
-	UIParent:RegisterEvent("TIME_PLAYED_MSG");
-end
 
-function events.PLAYER_LOGIN()
 	local hours, minutes, seconds = GetGameTime();
 	playedSession = time();
 	if tonumber(seconds) then
