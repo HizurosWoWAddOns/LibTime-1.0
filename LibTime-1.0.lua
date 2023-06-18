@@ -15,17 +15,18 @@ if not lib then return; end
 
 local GetGameTime, date, time, _G = GetGameTime, date, time, _G;
 local hms,hm = "%02d:%02d:%02d","%02d:%02d";
-local realmTime,minute = false,nil;
+local realmTime,minute = nil,nil;
 local playedTimeout, playedHide = 12, false;
 local playedTotal, playedLevel, playedSession = 0, 0, false;
 local suppressAllPlayedMsgs = false;
-local realmTimeSyncTicker
+local realmTimeSyncTicker,chatFrames
 local events = {};
 
 lib.countryLocalizedNames = {}; -- filled on end of the file
 
+local countries = {};
 local countryNames = {};
-local countries = {
+local countryList = {
 	"Afghanistan;4.5;0","Alaska;-9;1","Arabian;3;0","Argentina;-3;0","Armenia;4;1","Australian Central;9.5;1","Australian Eastern;10;1",
 	"AustralianWestern;8;0","Azerbaijan;4;1","Azores;-1;1","Bangladesh;6;0","Bhutan;6;0","Bolivia;-4;0","Brazil;-3;0","Brunei;8;0","Cape Verde;-1;0",
 	"Central Africa;2;0","Central Brazilian;-4;1","Central European;1;1","Central Greenland;-3;1","Central Indonesian;8;0","Chamorro;10;0","Chile;-4;1",
@@ -45,7 +46,6 @@ local countries = {
 
 --[[ internal event and update functions ]]--
 
-local chatFrames = false;
 local function toggleChatFramesTimePlayedMsgEvent()
 	if not chatFrames then
 		chatFrames = {};
@@ -73,7 +73,6 @@ local function playedTimeoutFunc()
 	if not playedTimeout then
 		return;
 	end
-	playedHide = true;
 	RequestTimePlayed();
 end
 
@@ -93,17 +92,17 @@ function events.VARIABLES_LOADED()
 end
 
 function events.PLAYER_LOGIN()
-	for index,data in ipairs(countries) do
+	for index,data in ipairs(countryList) do
 		local name,shift,dst = strsplit(";",data);
 		countries[index] = {name=lib.countryLocalizedNames[name] or name,timeshift=tonumber(shift),dst=dst==1};
 		countryNames[index] = lib.countryLocalizedNames[name] or name;
 	end
+	countryList=nil;
 
 	local hours, minutes, seconds = GetGameTime();
 	playedSession = time();
 	if tonumber(seconds) then
 		-- YEAH! Surprise! GetGameTime returns time "with seconds"... [maybe in future? ^_^]
-		realmTimeSyncTickerFunc = nil;
 		lib.GetGameTime = GetGameTime;
 	else
 		minute = minutes;
@@ -116,7 +115,7 @@ function events.PLAYER_LOGIN()
 end
 
 function events.TIME_PLAYED_MSG(...)
-	playedTimeout, playedTotal, playedLevel = false, ...;
+	playedTotal, playedLevel = ...;
 	if not suppressAllPlayedMsgs and chatFrames then
 		toggleChatFramesTimePlayedMsgEvent();
 	end
@@ -262,19 +261,16 @@ function lib.SuppressAllPlayedForSeconds(seconds)
 	end
 end
 
+--- Localizations
+-- Do you want to help localize this library?
+-- https://legacy.curseforge.com/wow/addons/libtime-1-0/localization
 
--- localizations; filled by packager
-
+-- [Info]:
+-- I don't like it really but this localization was made with google translation.
+-- Do you found wrong translations please go to the curseforge localization page and add the correct translation.
 do
-	-- Do you want to help localize this library?
-	-- https://www.curseforge.com/wow/addons/libtime-1-0/localization
-	-- or https://legacy.curseforge.com/wow/addons/libtime-1-0/localization
-
-	-- [Info]:
-	-- I don't like it really but this localization was made with google translation.
-	-- Do you found wrong translations please go to the curseforge localization page and add the correct translation.
 	local L = lib.countryLocalizedNames;
-	if LOCALE_deDE then
+	if _G["LOCALE_deDE"] then
 		L["Afghanistan"] = "Afghanistan"
 		L["Alaska"] = "Alaska"
 		L["Arabian"] = "arabisch"
@@ -389,7 +385,7 @@ do
 		L["Yakutsk"] = "Jakutsk"
 		L["Yap"] = "Kläffen"
 		L["Yekaterinburg"] = "Jekaterinburg"
-	elseif LOCALE_esES or LOCALE_esMX then
+	elseif _G["LOCALE_esES"] or _G["LOCALE_esMX"] then
 		L["Afghanistan"] = "Afganio"
 		L["Alaska"] = "Alasko"
 		L["Arabian"] = "araba"
@@ -490,7 +486,7 @@ do
 		L["Tuvalu"] = "Tuvalo"
 		L["Ulaanbaatar"] = "Ulanbatoro"
 		L["Uruguay"] = "Urugvajo"
-		L["US Central Standart Time (CST)"] = "Usona Centra Normala Tempo (CST)"
+		--L["US Central Standart Time (CST)"] = "Usona Centra Normala Tempo (CST)"
 		L["Uzbekistan"] = "Uzbekio"
 		L["Vanuatu"] = "Vanuatuo"
 		L["Venezuela"] = "Venezuelo"
@@ -504,7 +500,7 @@ do
 		L["Yakutsk"] = "Jakutsk"
 		L["Yap"] = "Jes"
 		L["Yekaterinburg"] = "Jekaterinburg"
-	elseif LOCALE_frFR then
+	elseif _G["LOCALE_frFR"] then
 		L["Afghanistan"] = "Afghanistan"
 		L["Alaska"] = "Alaska"
 		L["Arabian"] = "arabe"
@@ -605,7 +601,7 @@ do
 		L["Tuvalu"] = "Tuvalu"
 		L["Ulaanbaatar"] = "Oulan-Bator"
 		L["Uruguay"] = "Uruguay"
-		L["US Central Standart Time (CST)"] = "Heure normale du centre des États-Unis (CST)"
+		--L["US Central Standart Time (CST)"] = "Heure normale du centre des États-Unis (CST)"
 		L["Uzbekistan"] = "Ouzbékistan"
 		L["Vanuatu"] = "Vanuatu"
 		L["Venezuela"] = "Venezuela"
@@ -619,7 +615,7 @@ do
 		L["Yakutsk"] = "Iakoutsk"
 		L["Yap"] = "Japper"
 		L["Yekaterinburg"] = "Iekaterinbourg"
-	elseif LOCALE_itIT then
+	elseif _G["LOCALE_itIT"] then
 		L["Afghanistan"] = "Afghanistan"
 		L["Alaska"] = "Alaska"
 		L["Arabian"] = "arabo"
@@ -720,7 +716,7 @@ do
 		L["Tuvalu"] = "Tuvalù"
 		L["Ulaanbaatar"] = "Ulan Bator"
 		L["Uruguay"] = "Uruguay"
-		L["US Central Standart Time (CST)"] = "Ora standard centrale degli Stati Uniti (CST)"
+		--L["US Central Standart Time (CST)"] = "Ora standard centrale degli Stati Uniti (CST)"
 		L["Uzbekistan"] = "Uzbekistan"
 		L["Vanuatu"] = "Vanuatu"
 		L["Venezuela"] = "Venezuela"
@@ -734,7 +730,7 @@ do
 		L["Yakutsk"] = "Jakutsk"
 		L["Yap"] = "Già"
 		L["Yekaterinburg"] = "Ekaterinburg"
-	elseif LOCALE_koKR then
+	elseif _G["LOCALE_koKR"] then
 		L["Afghanistan"] = "아프가니스탄"
 		L["Alaska"] = "알래스카"
 		L["Arabian"] = "아라비아 사람"
@@ -835,7 +831,7 @@ do
 		L["Tuvalu"] = "투발루"
 		L["Ulaanbaatar"] = "울란바토르"
 		L["Uruguay"] = "우루과이"
-		L["US Central Standart Time (CST)"] = "미국 중부 표준시(CST)"
+		--L["US Central Standart Time (CST)"] = "미국 중부 표준시(CST)"
 		L["Uzbekistan"] = "우즈베키스탄"
 		L["Vanuatu"] = "바누아투"
 		L["Venezuela"] = "베네수엘라"
@@ -849,7 +845,7 @@ do
 		L["Yakutsk"] = "야쿠츠크"
 		L["Yap"] = "얍"
 		L["Yekaterinburg"] = "예 카테 린 부르크"
-	elseif LOCALE_ptBR or LOCALE_ptPT then
+	elseif _G["LOCALE_ptBR"] or _G["LOCALE_ptPT"] then
 		L["Afghanistan"] = "Afeganistão"
 		L["Alaska"] = "Alasca"
 		L["Arabian"] = "árabe"
@@ -950,7 +946,7 @@ do
 		L["Tuvalu"] = "Tuvalu"
 		L["Ulaanbaatar"] = "Ulaanbaatar"
 		L["Uruguay"] = "Uruguai"
-		L["US Central Standart Time (CST)"] = "Horário Padrão Central dos EUA (CST)"
+		--L["US Central Standart Time (CST)"] = "Horário Padrão Central dos EUA (CST)"
 		L["Uzbekistan"] = "Uzbequistão"
 		L["Vanuatu"] = "Vanuatu"
 		L["Venezuela"] = "Venezuela"
@@ -964,7 +960,7 @@ do
 		L["Yakutsk"] = "Iakutsk"
 		L["Yap"] = "Yap"
 		L["Yekaterinburg"] = "Ecaterimburgo"
-	elseif LOCALE_ruRU then
+	elseif _G["LOCALE_ruRU"] then
 		L["Afghanistan"] = "Афганистан"
 		L["Alaska"] = "Аляска"
 		L["Arabian"] = "арабский"
@@ -1065,7 +1061,7 @@ do
 		L["Tuvalu"] = "Тувалу"
 		L["Ulaanbaatar"] = "Улан-Батор"
 		L["Uruguay"] = "Уругвай"
-		L["US Central Standart Time (CST)"] = "Центральное стандартное время США (CST)"
+		--L["US Central Standart Time (CST)"] = "Центральное стандартное время США (CST)"
 		L["Uzbekistan"] = "Узбекистан"
 		L["Vanuatu"] = "Вануату"
 		L["Venezuela"] = "Венесуэла"
@@ -1079,7 +1075,7 @@ do
 		L["Yakutsk"] = "Якутск"
 		L["Yap"] = "Яп"
 		L["Yekaterinburg"] = "Екатеринбург"
-	elseif LOCALE_zhCN then
+	elseif _G["LOCALE_zhCN"] then
 		L["Afghanistan"] = "阿富汗"
 		L["Alaska"] = "阿拉斯加州"
 		L["Arabian"] = "阿拉伯"
@@ -1180,7 +1176,7 @@ do
 		L["Tuvalu"] = "图瓦卢"
 		L["Ulaanbaatar"] = "乌兰巴托"
 		L["Uruguay"] = "乌拉圭"
-		L["US Central Standart Time (CST)"] = "美国中部标准时间 (CST)"
+		--L["US Central Standart Time (CST)"] = "美国中部标准时间 (CST)"
 		L["Uzbekistan"] = "乌兹别克斯坦"
 		L["Vanuatu"] = "瓦努阿图"
 		L["Venezuela"] = "委内瑞拉"
@@ -1194,7 +1190,7 @@ do
 		L["Yakutsk"] = "雅库茨克"
 		L["Yap"] = "邑"
 		L["Yekaterinburg"] = "叶卡捷琳堡"
-	elseif LOCALE_zhTW then
+	elseif _G["LOCALE_zhTW"] then
 		L["Afghanistan"] = "阿富汗"
 		L["Alaska"] = "阿拉斯加州"
 		L["Arabian"] = "阿拉伯"
@@ -1295,7 +1291,7 @@ do
 		L["Tuvalu"] = "圖瓦盧"
 		L["Ulaanbaatar"] = "烏蘭巴托"
 		L["Uruguay"] = "烏拉圭"
-		L["US Central Standart Time (CST)"] = "美國中部標準時間 (CST)"
+		--L["US Central Standart Time (CST)"] = "美國中部標準時間 (CST)"
 		L["Uzbekistan"] = "烏茲別克斯坦"
 		L["Vanuatu"] = "瓦努阿圖"
 		L["Venezuela"] = "委內瑞拉"
