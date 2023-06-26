@@ -16,10 +16,10 @@ if not lib then return; end
 local GetGameTime, date, time, _G = GetGameTime, date, time, _G;
 local hms,hm = "%02d:%02d:%02d","%02d:%02d";
 local realmTime,minute = nil,nil;
-local playedTimeout, playedHide = 12, false;
-local playedTotal, playedLevel, playedSession = 0, 0, false;
+local playedTimeout,IsPlayerLoggedIn,IsPlayedTimeRequested = 12,false,false;
+local playedTotal, playedLevel, playedSession = 0, 0, nil;
 local suppressAllPlayedMsgs = false;
-local realmTimeSyncTicker,chatFrames
+local realmTimeSyncTicker,chatFrames,UnregisterEvent,RegisterEvent
 local events = {};
 
 lib.countryLocalizedNames = {}; -- filled on end of the file
@@ -47,14 +47,22 @@ local countryList = {
 --[[ internal event and update functions ]]--
 
 local function toggleChatFramesTimePlayedMsgEvent()
+	if not UnregisterEvent then
+		local mt = getmetatable(_G["ChatFrame1"]).__index;
+		if mt and mt.UnregisterEvent then
+			UnregisterEvent = mt.UnregisterEvent;
+			RegisterEvent = mt.RegisterEvent;
+		end
+	end
 	if not chatFrames then
 		chatFrames = {};
 		for i=1, 10 do
 			local frame = _G["ChatFrame"..i];
-			if _G["ChatFrame"..i] and _G["ChatFrame"..i].messageTypeList then
-				for _, group in ipairs(_G["ChatFrame"..i].messageTypeList) do
+			if frame and frame.messageTypeList then
+				for _, group in ipairs(frame.messageTypeList) do
 					if group=="SYSTEM" then
-						_G["ChatFrame"..i]:UnregisterEvent("TIME_PLAYED_MSG");
+						--UnregisterEvent(frame,"TIME_PLAYED_MSG");
+						frame:UnregisterEvent("TIME_PLAYED_MSG");
 						tinsert(chatFrames,i);
 					end
 				end
@@ -63,17 +71,20 @@ local function toggleChatFramesTimePlayedMsgEvent()
 	else
 		for i=1, #chatFrames do
 			if _G["ChatFrame"..chatFrames[i]] then
-				_G["ChatFrame"..chatFrames[i]]:RegisterEvent("TIME_PLAYED_MSG");
+				RegisterEvent(_G["ChatFrame"..chatFrames[i]],"TIME_PLAYED_MSG");
 			end
 		end
 	end
 end
 
-local function playedTimeoutFunc()
-	if not playedTimeout then
-		return;
+local function DoRequestTimePlayed()
+	if playedSession then return end
+	IsPlayedTimeRequested=true;
+	UIParent:RegisterEvent("TIME_PLAYED_MSG");
+	toggleChatFramesTimePlayedMsgEvent();
+	if playedTimeout then
+		C_Timer.After(playedTimeout,RequestTimePlayed);
 	end
-	RequestTimePlayed();
 end
 
 local function realmTimeSyncTickerFunc()
@@ -85,10 +96,6 @@ local function realmTimeSyncTickerFunc()
 		realmTime = time() - time(t);
 		realmTimeSyncTicker:Cancel();
 	end
-end
-
-function events.VARIABLES_LOADED()
-	UIParent:RegisterEvent("TIME_PLAYED_MSG");
 end
 
 function events.PLAYER_LOGIN()
@@ -108,10 +115,10 @@ function events.PLAYER_LOGIN()
 		minute = minutes;
 		realmTimeSyncTicker = C_Timer.NewTicker(0.5,realmTimeSyncTickerFunc);
 	end
-	toggleChatFramesTimePlayedMsgEvent();
-	if playedTimeout then
-		C_Timer.After(playedTimeout,playedTimeoutFunc);
+	if IsPlayedTimeRequested then
+		DoRequestTimePlayed()
 	end
+	IsPlayerLoggedIn=true;
 end
 
 function events.TIME_PLAYED_MSG(...)
@@ -207,9 +214,13 @@ function lib.iterateCountryList()
 end
 
 
---- GetPlayedTime
+--- GetPlayedTime - Get played time. Requires use of RequestPlayedTime.
 -- @return playedTotal, playedLevel, playedSession
 function lib.GetPlayedTime()
+	if not playedSession then
+		DoRequestTimePlayed(); -- fail safe
+		return false;
+	end
 	local session = time()-playedSession;
 	if (playedTotal) then
 		return playedTotal+session, playedLevel+session, session;
@@ -217,6 +228,15 @@ function lib.GetPlayedTime()
 	return 0, 0, session;
 end
 
+--- RequestPlayedTime - Now it is required to request played time before get it.
+-- @return nil
+function lib.RequestPlayedTime()
+	if playedSession then return end
+	if IsPlayerLoggedIn then
+		DoRequestTimePlayed();
+	end
+	IsPlayedTimeRequested = true;
+end
 
 --- GetTimeString
 -- @param name of time   <GameTime|LocalTime|UTCTime|CountryTime>
