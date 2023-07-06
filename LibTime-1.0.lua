@@ -14,11 +14,12 @@ local lib = LibStub:NewLibrary(MAJOR, MINOR);
 if not lib then return; end
 
 local GetGameTime, date, time, _G = GetGameTime, date, time, _G;
+local RequestTimePlayed,strsplit,ipairs = RequestTimePlayed,strsplit,ipairs;
+local tonumber,tinsert,unpack = tonumber,tinsert,unpack;
 local hms,hm = "%02d:%02d:%02d","%02d:%02d";
 local realmTime,minute = nil,nil;
-local playedTimeout,IsPlayerLoggedIn,IsPlayedTimeRequested = 12,false,false;
-local playedTotal, playedLevel, playedSession = 0, 0, nil;
-local suppressAllPlayedMsgs = false;
+local IsPlayerLoggedIn,IsPlayedTimeRequested = false,false;
+local playedTotal, playedLevel, playedSession;
 local realmTimeSyncTicker,chatFrames,UnregisterEvent,RegisterEvent
 local events = {};
 
@@ -55,35 +56,40 @@ local function toggleChatFramesTimePlayedMsgEvent()
 		end
 	end
 	if not chatFrames then
+		-- unregister TIME_PLAYED_MSG to hide played time message in chat
 		chatFrames = {};
 		for i=1, 10 do
 			local frame = _G["ChatFrame"..i];
 			if frame and frame.messageTypeList then
 				for _, group in ipairs(frame.messageTypeList) do
 					if group=="SYSTEM" then
-						--UnregisterEvent(frame,"TIME_PLAYED_MSG");
-						frame:UnregisterEvent("TIME_PLAYED_MSG");
+						UnregisterEvent(frame,"TIME_PLAYED_MSG");
 						tinsert(chatFrames,i);
 					end
 				end
 			end
 		end
 	else
+		-- re register event TIME_PLAYED_MSG
 		for i=1, #chatFrames do
 			if _G["ChatFrame"..chatFrames[i]] then
 				RegisterEvent(_G["ChatFrame"..chatFrames[i]],"TIME_PLAYED_MSG");
 			end
 		end
+		chatFrames = nil
 	end
 end
 
 local function DoRequestTimePlayed()
-	if playedSession then return end
-	IsPlayedTimeRequested=true;
-	UIParent:RegisterEvent("TIME_PLAYED_MSG");
+	-- played time already known
+	if playedTotal then
+		return
+	end
+	-- disable played message output in chat windows
 	toggleChatFramesTimePlayedMsgEvent();
-	if playedTimeout then
-		C_Timer.After(playedTimeout,RequestTimePlayed);
+	-- request /played if event PLAYER_LOGIN already fired
+	if IsPlayerLoggedIn then
+		RequestTimePlayed();
 	end
 end
 
@@ -115,17 +121,19 @@ function events.PLAYER_LOGIN()
 		minute = minutes;
 		realmTimeSyncTicker = C_Timer.NewTicker(0.5,realmTimeSyncTickerFunc);
 	end
+	IsPlayerLoggedIn=true;
 	if IsPlayedTimeRequested then
 		DoRequestTimePlayed()
 	end
-	IsPlayerLoggedIn=true;
 end
 
 function events.TIME_PLAYED_MSG(...)
 	playedTotal, playedLevel = ...;
-	if not suppressAllPlayedMsgs and chatFrames then
+	if chatFrames and #chatFrames>0 then
+		-- reenable played time messages in chat windows
 		toggleChatFramesTimePlayedMsgEvent();
 	end
+	UIParent:UnregisterEvent("TIME_PLAYED_MSG");
 end
 
 UIParent:HookScript("OnEvent",function(self,event,...)
@@ -135,6 +143,8 @@ UIParent:HookScript("OnEvent",function(self,event,...)
 	end
 end);
 
+UIParent:RegisterEvent("TIME_PLAYED_MSG");
+
 
 --[[ library functions ]]--
 local function get_date(timeval,b24h,bUTC)
@@ -142,6 +152,7 @@ local function get_date(timeval,b24h,bUTC)
 	local t = {strsplit(":",date(datestr,timeval))};
 	return tonumber(t[1]),tonumber(t[2]),tonumber(t[3]), t[4];
 end
+
 
 --- GetGameTime
 -- @param b24hours [bool]
@@ -217,10 +228,6 @@ end
 --- GetPlayedTime - Get played time. Requires use of RequestPlayedTime.
 -- @return playedTotal, playedLevel, playedSession
 function lib.GetPlayedTime()
-	if not playedSession then
-		DoRequestTimePlayed(); -- fail safe
-		return false;
-	end
 	local session = time()-playedSession;
 	if (playedTotal) then
 		return playedTotal+session, playedLevel+session, session;
@@ -228,15 +235,21 @@ function lib.GetPlayedTime()
 	return 0, 0, session;
 end
 
+
 --- RequestPlayedTime - Now it is required to request played time before get it.
 -- @return nil
 function lib.RequestPlayedTime()
-	if playedSession then return end
+	if playedTotal then
+		return -- played time already known
+	end
+	-- request /played if event PLAYER_LOGIN already fired
 	if IsPlayerLoggedIn then
 		DoRequestTimePlayed();
+	else -- wait on event PLAYER_LOGIN for request from client api
+		IsPlayedTimeRequested = true;
 	end
-	IsPlayedTimeRequested = true;
 end
+
 
 --- GetTimeString
 -- @param name of time   <GameTime|LocalTime|UTCTime|CountryTime>
@@ -265,21 +278,11 @@ function lib.GetTimeString(name,b24hours,displaySeconds,countryId)
 end
 
 
---- SuppressAllPlayedForSeconds
--- @param seconds [number] - time in seconds from login to suppress all played time messages
-function lib.SuppressAllPlayedForSeconds(seconds)
-	if (type(seconds)=="number") then
-		suppressAllPlayedMsgs = seconds;
-		local since = time()-(playedSession or 0);
-		if since<seconds then
-			C_Timer.After(seconds-since+15,function()
-				if chatFrames then
-					toggleChatFramesTimePlayedMsgEvent();
-				end
-			end);
-		end
-	end
+--- SuppressAllPlayedForSeconds - Deprecated!
+function lib.SuppressAllPlayedForSeconds()
+	print("LibTime-1.0:", " Warning. SuppressAllPlayedForSeconds function is deprecated. Will be removed soon.")
 end
+
 
 --- Localizations
 -- Do you want to help localize this library?
