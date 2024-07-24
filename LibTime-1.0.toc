@@ -1,6 +1,6 @@
-## Interface: 100207
+## Interface: 110000
 ## Interface-Cata: 40400
-## Interface-Classic: 11502
+## Interface-Classic: 11503
 ## Title: Lib: LibTime-1.0
 ## Notes: A little library around date, time and GetGameTime and more...
 ## Author: Hizuro
