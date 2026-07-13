@@ -19,9 +19,11 @@ local tonumber,tinsert,unpack = tonumber,tinsert,unpack;
 local hms,hm = "%02d:%02d:%02d","%02d:%02d";
 local realmTime,minute = nil,nil;
 local IsPlayerLoggedIn,IsPlayedTimeRequested = false,false;
-local playedTotal, playedLevel, playedSession;
+local playedTotal, playedLevel;
 local realmTimeSyncTicker,chatFrames,UnregisterEvent,RegisterEvent
 local events = {};
+local playedSession = time();
+
 
 lib.countryLocalizedNames = {}; -- filled on end of the file
 
@@ -113,7 +115,6 @@ function events.PLAYER_LOGIN()
 	countryList=nil;
 
 	local hours, minutes, seconds = GetGameTime();
-	playedSession = time();
 	if tonumber(seconds) then
 		-- YEAH! Surprise! GetGameTime returns time "with seconds"... [maybe in future? ^_^]
 		lib.GetGameTime = GetGameTime;
