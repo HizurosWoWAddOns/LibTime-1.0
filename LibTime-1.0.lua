@@ -114,6 +114,13 @@ function events.PLAYER_LOGIN()
 	end
 	countryList=nil;
 
+	if not playedSession then
+		playedSession = time()
+		if not playedSession then
+			C_Timer.After(3.14159,function() playedSession = time() end)
+		end
+	end
+
 	local hours, minutes, seconds = GetGameTime();
 	if tonumber(seconds) then
 		-- YEAH! Surprise! GetGameTime returns time "with seconds"... [maybe in future? ^_^]
@@ -229,7 +236,8 @@ end
 --- GetPlayedTime - Get played time. Requires use of RequestPlayedTime.
 -- @return playedTotal, playedLevel, playedSession
 function lib.GetPlayedTime()
-	local session = time()-playedSession;
+	local current = time()
+	local session = current-playedSession;
 	if (playedTotal) then
 		return playedTotal+session, playedLevel+session, session;
 	end
