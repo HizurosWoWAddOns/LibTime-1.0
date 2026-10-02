@@ -23,7 +23,7 @@ local playedTotal, playedLevel;
 local realmTimeSyncTicker,chatFrames,UnregisterEvent,RegisterEvent
 local events = {};
 local playedSession = time();
-
+local debuggingOn = false;
 
 lib.countryLocalizedNames = {}; -- filled on end of the file
 
@@ -48,6 +48,13 @@ local countryList = {
 
 
 --[[ internal event and update functions ]]--
+
+local function debug(...)
+	if not debuggingOn then
+		return
+	end
+	DeveloperConsole:AddMessage("|cffff7f7f["..MAJOR..","..MINOR.."]|r "..table.concat({tostringall(...)},", "))
+end
 
 local function toggleChatFramesTimePlayedMsgEvent()
 	if not UnregisterEvent then
@@ -144,15 +151,19 @@ function events.TIME_PLAYED_MSG(...)
 	UIParent:UnregisterEvent("TIME_PLAYED_MSG");
 end
 
-UIParent:HookScript("OnEvent",function(self,event,...)
-	if events[event] then
-		events[event](...);
-		events[event]=nil;
-	end
-end);
-
-UIParent:RegisterEvent("TIME_PLAYED_MSG");
-
+local eventFrame = _G["LibTimeEventFrame"]
+if not eventFrame then
+	eventFrame = CreateFrame("Frame","LibTimeEventFrame");
+	eventFrame:SetScript("OnEvent",function(self,event,...)
+		if events[event] then
+			events[event](...);
+			events[event]=nil;
+			eventFrame:RegisterEvent(event)
+		end
+	end)
+	eventFrame:RegisterEvent("PLAYER_LOGIN")
+	eventFrame:RegisterEvent("TIME_PLAYED_MSG")
+end
 
 --[[ library functions ]]--
 local function get_date(timeval,b24h,bUTC)
